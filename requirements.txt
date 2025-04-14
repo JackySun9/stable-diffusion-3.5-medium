@@ -1,0 +1,8 @@
+litserve==0.2.7
+torch==2.6.0
+diffusers==0.33.1
+transformers==4.51.3
+accelerate==1.6.0
+huggingface-hub==0.20.3
+protobuf==6.30.2
+sentencepiece==0.2.0
