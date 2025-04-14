@@ -1,6 +1,6 @@
 # Stable Diffusion Image Generator
 
-A local API server and client for generating images using Stable Diffusion v1.5.
+A local API server and client for generating images using Stable Diffusion v3.5.
 
 ## Features
 
@@ -49,7 +49,7 @@ python server.py
 
 The server will:
 1. Automatically detect the best available device (CUDA GPU, Apple Silicon MPS, or CPU)
-2. Download the Stable Diffusion v1.5 model if not already cached
+2. Download the Stable Diffusion v3.5 model if not already cached
 3. Start a REST API server on port 8000
 4. Accept image generation requests via the `/predict` endpoint
 
@@ -96,7 +96,7 @@ When generating images, you can configure:
 
 ## Customization
 
-The default model is Stable Diffusion v1.5, but the codebase can be modified to use other diffusion models available in the diffusers library.
+The default model is Stable Diffusion v3.5, but the codebase can be modified to use other diffusion models available in the diffusers library.
 
 ## Troubleshooting
 

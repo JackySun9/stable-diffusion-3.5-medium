@@ -17,7 +17,7 @@ class StableDiffusionClient:
         negative_prompt: str = "low quality, bad anatomy, worst quality, low resolution"
     ) -> Image.Image:
         """
-        Generate an image using Stable Diffusion v1.5
+        Generate an image using Stable Diffusion v3.5
         
         Args:
             prompt: Text description of the desired image
