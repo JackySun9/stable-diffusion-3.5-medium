@@ -44,16 +44,27 @@ class StableDiffusionAPI(ls.LitAPI):
         
         # CLIP token limit
         self.max_token_limit = 77
+        # Get tokenizer from text encoder for proper token counting
+        self.tokenizer = self.pipe.tokenizer
 
     def truncate_prompt(self, prompt):
-        """Truncate prompt to stay within CLIP token limit"""
-        # Simple truncation strategy based on character count
-        # On average, 1 token is roughly 4 characters in English
-        if len(prompt) > (self.max_token_limit * 4):
-            truncated = prompt[:(self.max_token_limit * 4)]
-            logger.warning(f"Prompt truncated from {len(prompt)} chars to {len(truncated)} chars due to CLIP token limit")
-            return truncated
-        return prompt
+        """Properly truncate prompt to stay within CLIP token limit using actual tokenizer"""
+        if not prompt:
+            return prompt
+            
+        # Tokenize the prompt
+        tokens = self.tokenizer.encode(prompt)
+        
+        # Check if truncation is needed
+        if len(tokens) <= self.max_token_limit:
+            return prompt
+            
+        # Truncate tokens and decode back to text
+        truncated_tokens = tokens[:self.max_token_limit]
+        truncated_prompt = self.tokenizer.decode(truncated_tokens)
+        
+        logger.warning(f"Prompt truncated from {len(tokens)} tokens to {len(truncated_tokens)} tokens")
+        return truncated_prompt
 
     def decode_request(self, request):
         # Extract prompt and optional parameters from request
