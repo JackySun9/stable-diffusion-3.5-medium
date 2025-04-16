@@ -6,3 +6,4 @@ generated_images/*
 
 .env
 
+__pycache__

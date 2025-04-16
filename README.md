@@ -1,14 +1,6 @@
-# Stable Diffusion Image Generator
+# Stable Diffusion 3.5 Medium Interface
 
-A local API server and client for generating images using Stable Diffusion v3.5.
-
-## Features
-
-- REST API server for image generation
-- Simple Python client
-- Support for macOS with MPS acceleration (Apple Silicon)
-- Automatic device detection (CUDA, MPS, CPU)
-- Configurable image generation parameters
+This directory contains code to run and interact with the Stable Diffusion 3.5 Medium model using various interfaces.
 
 ## Requirements
 
@@ -26,81 +18,87 @@ A local API server and client for generating images using Stable Diffusion v3.5.
    source .venv/bin/activate
    ```
 
-3. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
+3. Install the required dependencies:
+```bash
+pip install diffusers gradio litserve pillow torch huggingface_hub
+```
 
-4. Set up your Hugging Face token (optional but recommended):
-   ```bash
-   export HF_TOKEN=your_token_here
-   ```
-   Without a token, the model download might be rate-limited or fail.
+4. Set your Hugging Face token as an environment variable (required to download the model):
+```bash
+export HF_TOKEN=your_huggingface_token
+```
 
-## Usage
+## Usage Options
 
-### Starting the Server
+You have multiple ways to use the Stable Diffusion 3.5 Medium model:
 
-Run the server with:
+### Option 1: Using the Server and Client (Recommended for multi-user setups)
+
+#### Running the Server
+
+The server provides a REST API for generating images:
 
 ```bash
 python server.py
 ```
 
-The server will:
-1. Automatically detect the best available device (CUDA GPU, Apple Silicon MPS, or CPU)
-2. Download the Stable Diffusion v3.5 model if not already cached
-3. Start a REST API server on port 8000
-4. Accept image generation requests via the `/predict` endpoint
+This will start a server at http://localhost:8000
 
-### Generating Images
+#### Using the Gradio Web Interface with Server
 
-You can generate images in two ways:
-
-#### Using the included Python client
+For a user-friendly web interface that connects to the running server:
 
 ```bash
-python client.py "a photograph of a mountain lake at sunset"
+python gradio_app.py
 ```
 
-The generated image will be saved in the `generated_images` directory.
+This will start a Gradio web interface at http://localhost:7860
 
-#### Using the API directly
+**Important**: Make sure the server is running before starting the Gradio interface.
 
-Send a POST request to the `/predict` endpoint:
+#### Using the Python Client
+
+There's a Python client provided that can be used to generate images programmatically:
+
+```python
+from client import StableDiffusionClient, save_image_with_timestamp
+
+# Initialize client
+client = StableDiffusionClient(base_url="http://localhost:8000")
+
+# Generate an image
+image = client.generate_image(
+    prompt="A beautiful sunset over the ocean",
+    num_inference_steps=28,
+    guidance_scale=3.5,
+    negative_prompt="low quality, bad anatomy, worst quality, low resolution"
+)
+
+# Save the image
+save_image_with_timestamp(image, "sunset", "my_images")
+```
+
+#### Using the Command Line Interface
+
+You can also generate images directly from the command line:
 
 ```bash
-curl -X POST http://localhost:8000/predict \
-  -H "Content-Type: application/json" \
-  -d '{"prompt": "a photograph of a mountain lake at sunset", "num_inference_steps": 20, "guidance_scale": 7.5}'
+python client.py "A beautiful sunset over the ocean" --output-dir my_images
 ```
 
-The response will be a PNG image.
+### Option 2: Standalone Gradio App (Simplest to use)
 
-## Configuration Options
+For a single-user setup without running a separate server:
 
-When generating images, you can configure:
+```bash
+python gradio_standalone.py
+```
 
-- `prompt`: Text description of the desired image
-- `num_inference_steps`: Number of denoising steps (higher = better quality but slower)
-- `guidance_scale`: How closely to follow the prompt (higher = more faithful but less creative)
-- `negative_prompt`: Text description of what to avoid in the image
+This will start a Gradio web interface at http://localhost:7860 that directly loads and runs the model.
 
-## Performance Notes
+## Notes
 
-- On Apple Silicon Macs (M1/M2/M3), the model uses MPS acceleration
-- First generation is slower due to model loading and compilation
-- Subsequent generations are faster
-- Memory is automatically cleared between generations on Apple Silicon
-- Generation time depends on device performance and inference steps
-
-## Customization
-
-The default model is Stable Diffusion v3.5, but the codebase can be modified to use other diffusion models available in the diffusers library.
-
-## Troubleshooting
-
-- If you encounter "Connection refused" errors, make sure the server is running
-- If you see CUDA or MPS related errors, try falling back to CPU by modifying the device detection in server.py
-- For "out of memory" errors, reduce the batch size or use fewer inference steps
-- If model download fails, check your internet connection and Hugging Face token 
+- The default parameters (28 inference steps, 3.5 guidance scale) are optimized for Stable Diffusion 3.5.
+- The first run will download the model weights from Hugging Face, which may take some time.
+- The model requires significant GPU memory; if you're running on a CPU, the generation will be much slower.
+- The standalone version is simpler to use but loads the model in the same process as the web server, while the server-client approach can be more efficient for serving multiple users. 
