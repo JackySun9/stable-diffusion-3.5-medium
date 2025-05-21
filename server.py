@@ -33,6 +33,13 @@ class StableDiffusionAPI(ls.LitAPI):
             variant="fp16"
         ).to(device)
 
+        self.pipe.load_lora_weights(
+            "tensorart/stable-diffusion-3.5-medium-turbo",
+            weight_name="lora_sd3.5m_turbo_8steps.safetensors",
+        )
+
+        self.pipe.fuse_lora()
+
         # Enable memory efficient attention
         self.pipe.enable_attention_slicing()
         
@@ -51,7 +58,9 @@ class StableDiffusionAPI(ls.LitAPI):
         """Properly truncate prompt to stay within CLIP token limit using actual tokenizer"""
         if not prompt:
             return prompt
-            
+
+        print(prompt)
+        
         # Tokenize the prompt
         tokens = self.tokenizer.encode(prompt)
         
